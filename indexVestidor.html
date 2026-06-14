@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>El Vestidor</title>
+<meta name="description" content="Tu guardarropa digital: sube tus prendas y recibe el outfit del día." />
+<meta name="theme-color" content="#6B2B45" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="El Vestidor" />
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23F4EFE7'/%3E%3Ccircle cx='50' cy='25' r='5' fill='%236B2B45'/%3E%3Cpath d='M50 29 L28 52 L72 52 Z M22 76 L50 52 L78 76 Z' fill='none' stroke='%236B2B45' stroke-width='5' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;background:#F4EFE7}
+:root{
+  --canvas:#F4EFE7; --paper:#FBF8F3; --ink:#221A1E; --muted:#7A6E66;
+  --wine:#6B2B45; --wine-2:#8A3D5B; --gold:#A8823A; --line:#E4D9CB;
+  --olive:#5E6B43;
+}
+*{box-sizing:border-box}
+.ev-root{
+  font-family:'Archivo',system-ui,sans-serif; color:var(--ink);
+  background:var(--canvas); min-height:100vh; -webkit-font-smoothing:antialiased;
+}
+.ev-shell{max-width:460px;margin:0 auto;padding:0 0 96px;position:relative}
+.ev-serif{font-family:'Fraunces',Georgia,serif}
+.ev-eyebrow{font:600 11px/1 'Archivo';letter-spacing:.22em;text-transform:uppercase;color:var(--gold)}
+
+/* header */
+.ev-head{padding:26px 22px 14px;display:flex;align-items:flex-end;justify-content:space-between}
+.ev-head h1{font-family:'Fraunces';font-weight:600;font-size:30px;letter-spacing:-.01em;margin:6px 0 0;line-height:1}
+.ev-head .sub{color:var(--muted);font-size:13px;margin-top:7px}
+
+/* nav */
+.ev-nav{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;justify-content:center;pointer-events:none}
+.ev-nav-inner{pointer-events:auto;display:flex;gap:4px;background:var(--ink);margin:0 0 16px;padding:6px;border-radius:999px;box-shadow:0 12px 30px rgba(34,26,30,.28)}
+.ev-tab{border:0;background:transparent;color:#D9CFC6;font:600 13px 'Archivo';letter-spacing:.02em;padding:10px 16px;border-radius:999px;cursor:pointer;display:flex;align-items:center;gap:7px;transition:.2s}
+.ev-tab.on{background:var(--paper);color:var(--ink)}
+.ev-tab svg{width:16px;height:16px}
+
+/* chips */
+.ev-chips{display:flex;gap:8px;overflow-x:auto;padding:4px 22px 14px;scrollbar-width:none}
+.ev-chips::-webkit-scrollbar{display:none}
+.ev-chip{white-space:nowrap;border:1px solid var(--line);background:var(--paper);color:var(--muted);font:600 12.5px 'Archivo';padding:8px 14px;border-radius:999px;cursor:pointer;transition:.15s}
+.ev-chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+/* grid de prendas */
+.ev-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:4px 22px}
+.ev-card{background:var(--paper);border:1px solid var(--line);border-radius:14px;overflow:hidden;position:relative}
+.ev-card .ph{aspect-ratio:3/4;background:#EFE7DC center/cover no-repeat;display:block}
+.ev-card .meta{padding:9px 11px 11px}
+.ev-card .nm{font:600 13px 'Archivo';line-height:1.2}
+.ev-card .tg{display:flex;gap:5px;margin-top:6px;flex-wrap:wrap}
+.ev-pill{font:600 10px 'Archivo';letter-spacing:.03em;padding:3px 7px;border-radius:999px;background:#F0E8DC;color:var(--muted)}
+.ev-del{position:absolute;top:7px;right:7px;width:26px;height:26px;border-radius:999px;border:0;background:rgba(34,26,30,.55);color:#fff;font-size:14px;line-height:1;cursor:pointer;backdrop-filter:blur(2px)}
+
+/* botón añadir */
+.ev-add{grid-column:span 2;border:1.5px dashed var(--line);background:transparent;border-radius:14px;padding:18px;color:var(--wine);font:700 14px 'Archivo';cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+.ev-addtile{aspect-ratio:3/4;border:1.5px dashed var(--line);border-radius:14px;background:transparent;color:var(--wine);font:700 13px 'Archivo';cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+.ev-addtile svg{width:24px;height:24px}
+
+/* empty */
+.ev-empty{margin:30px 22px;padding:34px 22px;text-align:center;border:1px solid var(--line);border-radius:18px;background:var(--paper)}
+.ev-empty .ic{font-size:30px}
+.ev-empty h3{font-family:'Fraunces';font-weight:600;font-size:20px;margin:12px 0 6px}
+.ev-empty p{color:var(--muted);font-size:13.5px;line-height:1.5;margin:0 auto;max-width:260px}
+
+/* sheet / modal */
+.ev-back{position:fixed;inset:0;background:rgba(34,26,30,.45);z-index:40;display:flex;align-items:flex-end;justify-content:center}
+.ev-sheet{background:var(--canvas);width:100%;max-width:460px;border-radius:22px 22px 0 0;padding:20px 22px 26px;max-height:92vh;overflow:auto;animation:up .26s ease}
+@keyframes up{from{transform:translateY(30px);opacity:.6}to{transform:none;opacity:1}}
+.ev-sheet h2{font-family:'Fraunces';font-weight:600;font-size:22px;margin:2px 0 2px}
+.ev-grab{width:40px;height:4px;border-radius:9px;background:var(--line);margin:0 auto 14px}
+.ev-preview{width:100%;aspect-ratio:3/4;max-height:240px;object-fit:cover;border-radius:14px;border:1px solid var(--line);background:#EFE7DC;margin:6px 0 14px}
+.ev-lbl{font:700 11px 'Archivo';letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:14px 0 8px}
+.ev-opts{display:flex;flex-wrap:wrap;gap:8px}
+.ev-opt{border:1px solid var(--line);background:var(--paper);color:var(--ink);font:600 13px 'Archivo';padding:9px 13px;border-radius:10px;cursor:pointer;transition:.15s}
+.ev-opt.on{background:var(--wine);color:#fff;border-color:var(--wine)}
+.ev-input{width:100%;border:1px solid var(--line);background:var(--paper);border-radius:10px;padding:11px 13px;font:500 14px 'Archivo';color:var(--ink)}
+.ev-input:focus{outline:2px solid var(--wine-2);outline-offset:1px}
+
+/* botones */
+.ev-btn{width:100%;border:0;border-radius:12px;padding:15px;font:700 15px 'Archivo';cursor:pointer;transition:.15s}
+.ev-btn.primary{background:var(--wine);color:#fff}
+.ev-btn.primary:active{background:var(--wine-2)}
+.ev-btn.ghost{background:transparent;color:var(--muted);font-weight:600;padding:12px}
+.ev-btn:disabled{opacity:.5;cursor:default}
+.ev-row2{display:flex;gap:10px;margin-top:14px}
+
+/* mi foto */
+.ev-bodywrap{margin:8px 22px;background:var(--paper);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.ev-bodywrap img{width:100%;display:block;max-height:440px;object-fit:cover}
+.ev-bodyempty{aspect-ratio:3/4;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--wine);cursor:pointer}
+.ev-bodyempty svg{width:34px;height:34px}
+
+/* outfit form */
+.ev-form{padding:6px 22px}
+.ev-q{margin:18px 0 0}
+.ev-q .ev-eyebrow{display:block;margin-bottom:10px}
+
+/* look card (FIRMA) */
+.ev-look{margin:8px 22px 0;background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:20px 18px;box-shadow:0 14px 34px rgba(34,26,30,.10)}
+.ev-look .top{text-align:center;border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:16px}
+.ev-look h2{font-family:'Fraunces';font-weight:600;font-size:25px;line-height:1.12;margin:8px 14px 0}
+.ev-look .ctx{color:var(--muted);font-size:12px;margin-top:9px;letter-spacing:.01em}
+.ev-flat{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.ev-flat .pc{position:relative}
+.ev-flat .pc .ph{aspect-ratio:3/4;border-radius:12px;background:#EFE7DC center/cover no-repeat;border:1px solid var(--line)}
+.ev-flat .pc .cap{font:600 11px 'Archivo';color:var(--muted);margin-top:6px;letter-spacing:.04em;text-transform:uppercase}
+.ev-note{margin-top:18px;padding-top:16px;border-top:1px solid var(--line);font-family:'Fraunces';font-style:italic;font-size:15.5px;line-height:1.5;color:var(--ink)}
+.ev-note::before{content:"“";color:var(--gold);font-size:22px;margin-right:2px}
+
+/* loading */
+.ev-loading{margin:30px 22px;text-align:center;color:var(--muted)}
+.ev-dots{display:inline-flex;gap:6px;margin-bottom:12px}
+.ev-dots i{width:9px;height:9px;border-radius:9px;background:var(--wine);display:block;animation:b 1s infinite}
+.ev-dots i:nth-child(2){animation-delay:.15s}.ev-dots i:nth-child(3){animation-delay:.3s}
+@keyframes b{0%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-4px)}}
+
+.ev-foot{text-align:center;color:var(--muted);font-size:11px;padding:20px 22px 0;letter-spacing:.02em}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<script type="text/babel" data-presets="react">
+const { useEffect, useState } = React;
+
+/* ----------------------------- datos ----------------------------- */
+const CATS = [
+  { id: "blusas", label: "Blusas" },
+  { id: "pantalones", label: "Pantalones" },
+  { id: "faldas", label: "Faldas" },
+  { id: "vestidos", label: "Vestidos" },
+  { id: "abrigos", label: "Abrigos" },
+  { id: "zapatos", label: "Zapatos" },
+  { id: "bolsas", label: "Bolsas" },
+  { id: "sombreros", label: "Sombreros" },
+  { id: "accesorios", label: "Accesorios" },
+];
+const CAT_LABEL = Object.fromEntries(CATS.map((c) => [c.id, c.label]));
+
+const COLORS = ["Blanco/Neutro","Negro","Tierra/Café","Azul","Verde","Rojo/Vino","Rosa","Pastel","Dorado/Plata","Estampado"];
+const FORMALITY = [{v:1,l:"Casual"},{v:2,l:"Smart casual"},{v:3,l:"Formal"}];
+const WARMTH = [{v:1,l:"Ligero"},{v:2,l:"Medio"},{v:3,l:"Abrigado"}];
+
+const OCCASIONS = [
+  { id:"oficina", l:"Oficina" },
+  { id:"casual", l:"Reunión casual" },
+  { id:"formal", l:"Reunión formal" },
+  { id:"casa", l:"En casa" },
+];
+const WEATHER = [
+  { id:"calor", l:"Calor", warm:1 },
+  { id:"templado", l:"Templado", warm:1 },
+  { id:"fresco", l:"Fresco", warm:2 },
+  { id:"frio", l:"Frío", warm:3, coat:true },
+  { id:"lluvia", l:"Lluvia", warm:2, coat:true },
+];
+const MOODS = [
+  { id:"comoda", l:"Cómoda" },
+  { id:"elegante", l:"Elegante" },
+  { id:"energia", l:"Con energía" },
+  { id:"minimal", l:"Minimalista" },
+  { id:"atrevida", l:"Atrevida" },
+];
+
+const uid = () => Math.random().toString(36).slice(2, 9);
+
+/* ------------------------ almacenamiento local ------------------------
+   Guarda tus prendas y tu foto en este navegador, usando IndexedDB
+   (mucho más espacio que localStorage, ideal para muchas fotos). */
+const DB_NAME = "el-vestidor-db";
+const STORE_NAME = "kv";
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = () => { req.result.createObjectStore(STORE_NAME); };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+const store = {
+  async get(key) {
+    try {
+      const db = await openDB();
+      return await new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, "readonly");
+        const r = tx.objectStore(STORE_NAME).get(key);
+        r.onsuccess = () => resolve(r.result === undefined ? null : r.result);
+        r.onerror = () => reject(r.error);
+      });
+    } catch { return null; }
+  },
+  async set(key, value) {
+    try {
+      const db = await openDB();
+      return await new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, "readwrite");
+        tx.objectStore(STORE_NAME).put(value, key);
+        tx.oncomplete = () => resolve(true);
+        tx.onerror = () => reject(tx.error);
+      });
+    } catch { return false; }
+  },
+};
+
+function resizeImage(file, max = 560) {
+  return new Promise((res, rej) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const scale = Math.min(1, max / Math.max(img.width, img.height));
+      const w = Math.round(img.width * scale), h = Math.round(img.height * scale);
+      const c = document.createElement("canvas");
+      c.width = w; c.height = h;
+      c.getContext("2d").drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      try { res(c.toDataURL("image/jpeg", 0.82)); } catch (e) { rej(e); }
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error("img")); };
+    img.src = url;
+  });
+}
+
+/* ----------------------------- iconos ----------------------------- */
+const I = {
+  closet:(p)=> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" {...p}><rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M12 3v18M9 11h.01M15 11h.01"/></svg>,
+  body:(p)=> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" {...p}><circle cx="12" cy="6" r="3"/><path d="M6 21v-2a6 6 0 0 1 12 0v2"/></svg>,
+  spark:(p)=> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" {...p}><path d="M12 3l1.8 4.6L18.5 9.4 13.8 11.2 12 16l-1.8-4.8L5.5 9.4l4.7-1.8L12 3z"/><path d="M19 15l.7 1.8L21.5 17.5l-1.8.7L19 20l-.7-1.8L16.5 17.5l1.8-.7L19 15z"/></svg>,
+  plus:(p)=> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" {...p}><path d="M12 5v14M5 12h14"/></svg>,
+  cam:(p)=> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" {...p}><path d="M4 8a2 2 0 0 1 2-2h2l1.2-1.6A1 1 0 0 1 12 4h0a1 1 0 0 1 .8.4L14 6h4a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8z"/><circle cx="12" cy="13" r="3.2"/></svg>,
+};
+
+/* Botón "selector de archivo": pone un <input type="file"> real e invisible
+   encima del contenido, para que el toque caiga directo sobre el control
+   nativo. Es lo más compatible con navegadores y apps móviles. */
+function FilePicker({ onFile, className, style, children }) {
+  return (
+    <div className={className} style={{ position: "relative", ...style }}>
+      {children}
+      <input
+        type="file"
+        accept="image/*"
+        onChange={onFile}
+        style={{
+          position: "absolute", inset: 0, width: "100%", height: "100%",
+          opacity: 0, cursor: "pointer", border: 0,
+        }}
+      />
+    </div>
+  );
+}
+
+/* =============================== APP =============================== */
+function App() {
+  const [tab, setTab] = useState("closet");
+  const [items, setItems] = useState([]);
+  const [images, setImages] = useState({});       // id -> dataURL
+  const [body, setBody] = useState(null);
+  const [ready, setReady] = useState(false);
+
+  // cargar guardarropa
+  useEffect(() => {
+    (async () => {
+      const idx = (await store.get("closet:index")) || [];
+      const imgMap = {};
+      for (const c of CATS) {
+        const blob = await store.get(`closet:imgs:${c.id}`);
+        if (blob) Object.assign(imgMap, blob);
+      }
+      const b = await store.get("body:photo");
+      setItems(idx); setImages(imgMap); setBody(b); setReady(true);
+    })();
+  }, []);
+
+  async function saveCategory(cat, nextItems, nextImages) {
+    const map = {};
+    nextItems.filter((i) => i.cat === cat).forEach((i) => { if (nextImages[i.id]) map[i.id] = nextImages[i.id]; });
+    await store.set(`closet:imgs:${cat}`, map);
+    await store.set("closet:index", nextItems);
+  }
+
+  async function addItem(it, dataURL) {
+    const nextItems = [it, ...items];
+    const nextImages = { ...images, [it.id]: dataURL };
+    setItems(nextItems); setImages(nextImages);
+    await saveCategory(it.cat, nextItems, nextImages);
+  }
+  async function removeItem(it) {
+    const nextItems = items.filter((x) => x.id !== it.id);
+    const nextImages = { ...images }; delete nextImages[it.id];
+    setItems(nextItems); setImages(nextImages);
+    await saveCategory(it.cat, nextItems, nextImages);
+  }
+  async function saveBody(dataURL) { setBody(dataURL); await store.set("body:photo", dataURL); }
+
+  return (
+    <div className="ev-root">
+      <div className="ev-shell">
+        <header className="ev-head">
+          <div>
+            <span className="ev-eyebrow">Tu estilista personal</span>
+            <h1 className="ev-serif">El Vestidor</h1>
+          </div>
+          <div className="sub">{items.length} prendas</div>
+        </header>
+
+        {!ready ? (
+          <div className="ev-loading" style={{marginTop:60}}>
+            <div className="ev-dots"><i/><i/><i/></div>
+            <div>Abriendo tu guardarropa…</div>
+          </div>
+        ) : tab === "closet" ? (
+          <ClosetView items={items} images={images} onAdd={addItem} onRemove={removeItem} />
+        ) : tab === "body" ? (
+          <BodyView body={body} onSave={saveBody} />
+        ) : (
+          <OutfitView items={items} images={images} body={body} />
+        )}
+
+        <p className="ev-foot">Tus prendas y tu foto se guardan en este navegador, en este teléfono, entre sesiones.</p>
+      </div>
+
+      <nav className="ev-nav">
+        <div className="ev-nav-inner">
+          <button className={`ev-tab ${tab==="closet"?"on":""}`} onClick={()=>setTab("closet")}><I.closet/> Guardarropa</button>
+          <button className={`ev-tab ${tab==="body"?"on":""}`} onClick={()=>setTab("body")}><I.body/> Mi foto</button>
+          <button className={`ev-tab ${tab==="outfit"?"on":""}`} onClick={()=>setTab("outfit")}><I.spark/> Outfit</button>
+        </div>
+      </nav>
+    </div>
+  );
+}
+
+/* --------------------------- GUARDARROPA --------------------------- */
+function ClosetView({ items, images, onAdd, onRemove }) {
+  const [filter, setFilter] = useState("todo");
+  const [adding, setAdding] = useState(null); // {dataURL} | null
+
+  const shown = filter === "todo" ? items : items.filter((i) => i.cat === filter);
+
+  async function onFile(e) {
+    const f = e.target.files?.[0];
+    e.target.value = "";
+    if (!f) return;
+    try { const d = await resizeImage(f); setAdding({ dataURL: d }); }
+    catch { alert("No se pudo leer esa imagen. Prueba con otra foto."); }
+  }
+
+  return (
+    <>
+      <div className="ev-chips">
+        <button className={`ev-chip ${filter==="todo"?"on":""}`} onClick={()=>setFilter("todo")}>Todo</button>
+        {CATS.map((c)=> (
+          <button key={c.id} className={`ev-chip ${filter===c.id?"on":""}`} onClick={()=>setFilter(c.id)}>{c.label}</button>
+        ))}
+      </div>
+
+      {items.length === 0 ? (
+        <div className="ev-empty">
+          <div className="ic">🧥</div>
+          <h3 className="ev-serif">Tu vestidor está vacío</h3>
+          <p>Sube fotos de tus blusas, faldas, vestidos, zapatos y accesorios. Cuantas más prendas, mejores looks.</p>
+          <div style={{marginTop:18}}>
+            <FilePicker onFile={onFile} className="ev-btn primary" style={{maxWidth:240,margin:"0 auto",display:"block",textAlign:"center"}}>
+              Añadir mi primera prenda
+            </FilePicker>
+          </div>
+        </div>
+      ) : (
+        <div className="ev-grid">
+          <FilePicker onFile={onFile} className="ev-add"><I.plus/> Añadir prenda</FilePicker>
+          {shown.map((it)=> (
+            <div className="ev-card" key={it.id}>
+              <button className="ev-del" onClick={()=>onRemove(it)} aria-label="Eliminar">×</button>
+              <span className="ph" style={{backgroundImage:`url(${images[it.id]})`}} />
+              <div className="meta">
+                <div className="nm">{it.name}</div>
+                <div className="tg">
+                  <span className="ev-pill">{CAT_LABEL[it.cat]}</span>
+                  <span className="ev-pill">{FORMALITY.find(f=>f.v===it.formality)?.l}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+          {shown.length === 0 && (
+            <div style={{gridColumn:"span 2",textAlign:"center",color:"var(--muted)",padding:"24px 0",fontSize:13.5}}>
+              No tienes prendas en {CAT_LABEL[filter]?.toLowerCase()} todavía.
+            </div>
+          )}
+        </div>
+      )}
+
+      {adding && (
+        <AddSheet
+          dataURL={adding.dataURL}
+          defaultCat={filter !== "todo" ? filter : "blusas"}
+          onClose={()=>setAdding(null)}
+          onSave={(it)=>{ onAdd(it, adding.dataURL); setAdding(null); }}
+        />
+      )}
+    </>
+  );
+}
+
+function AddSheet({ dataURL, defaultCat, onClose, onSave }) {
+  const [cat, setCat] = useState(defaultCat);
+  const [name, setName] = useState("");
+  const [color, setColor] = useState(COLORS[0]);
+  const [formality, setFormality] = useState(2);
+  const [warmth, setWarmth] = useState(1);
+
+  function save() {
+    onSave({
+      id: uid(), cat, color, formality, warmth,
+      name: name.trim() || CAT_LABEL[cat],
+    });
+  }
+
+  return (
+    <div className="ev-back" onClick={onClose}>
+      <div className="ev-sheet" onClick={(e)=>e.stopPropagation()}>
+        <div className="ev-grab" />
+        <span className="ev-eyebrow">Nueva prenda</span>
+        <h2 className="ev-serif">Describe la prenda</h2>
+        <img className="ev-preview" src={dataURL} alt="" />
+
+        <div className="ev-lbl">Categoría</div>
+        <div className="ev-opts">
+          {CATS.map((c)=>(
+            <button key={c.id} className={`ev-opt ${cat===c.id?"on":""}`} onClick={()=>setCat(c.id)}>{c.label}</button>
+          ))}
+        </div>
+
+        <div className="ev-lbl">Nombre (opcional)</div>
+        <input className="ev-input" value={name} onChange={(e)=>setName(e.target.value)} placeholder={`p. ej. ${CAT_LABEL[cat]} favorita`} />
+
+        <div className="ev-lbl">Color principal</div>
+        <div className="ev-opts">
+          {COLORS.map((c)=>(<button key={c} className={`ev-opt ${color===c?"on":""}`} onClick={()=>setColor(c)}>{c}</button>))}
+        </div>
+
+        <div className="ev-lbl">Estilo</div>
+        <div className="ev-opts">
+          {FORMALITY.map((f)=>(<button key={f.v} className={`ev-opt ${formality===f.v?"on":""}`} onClick={()=>setFormality(f.v)}>{f.l}</button>))}
+        </div>
+
+        <div className="ev-lbl">Abrigo</div>
+        <div className="ev-opts">
+          {WARMTH.map((w)=>(<button key={w.v} className={`ev-opt ${warmth===w.v?"on":""}`} onClick={()=>setWarmth(w.v)}>{w.l}</button>))}
+        </div>
+
+        <div className="ev-row2">
+          <button className="ev-btn ghost" style={{flex:"0 0 90px"}} onClick={onClose}>Cancelar</button>
+          <button className="ev-btn primary" style={{flex:1}} onClick={save}>Guardar prenda</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------ MI FOTO ------------------------------ */
+function BodyView({ body, onSave }) {
+  async function onFile(e) {
+    const f = e.target.files?.[0]; e.target.value="";
+    if (!f) return;
+    try { const d = await resizeImage(f, 720); onSave(d); }
+    catch { alert("No se pudo leer esa imagen."); }
+  }
+  return (
+    <div className="ev-form">
+      <div className="ev-q"><span className="ev-eyebrow">Referencia</span></div>
+      <p style={{color:"var(--muted)",fontSize:13.5,lineHeight:1.55,margin:"8px 0 14px"}}>
+        Sube una foto tuya de cuerpo entero. Sirve como referencia visual para imaginar cómo te quedan los looks.
+      </p>
+      <div className="ev-bodywrap">
+        {body ? <img src={body} alt="Tu foto" />
+          : <FilePicker onFile={onFile} className="ev-bodyempty"><I.cam/><span style={{font:"700 14px Archivo"}}>Subir foto de cuerpo</span></FilePicker>}
+      </div>
+      <div className="ev-row2">
+        <FilePicker onFile={onFile} className="ev-btn primary" style={{display:"block",textAlign:"center"}}>{body ? "Cambiar foto" : "Subir foto"}</FilePicker>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------ OUTFIT ------------------------------ */
+function OutfitView({ items, images, body }) {
+  const [occ, setOcc] = useState("oficina");
+  const [wx, setWx] = useState("templado");
+  const [mood, setMood] = useState("elegante");
+  const [phase, setPhase] = useState("form"); // form | loading | result
+  const [look, setLook] = useState(null);
+
+  const hasShoes = items.some((i)=>i.cat==="zapatos");
+  const canMake = items.length >= 2;
+
+  async function make(prev) {
+    setPhase("loading");
+    await new Promise((r)=>setTimeout(r, 450)); // pequeña pausa, se siente como "pensando"
+    const result = ruleOutfit(items, occ, wx, mood, prev?.items || []);
+    setLook({ ...result, occ, wx, mood });
+    setPhase("result");
+  }
+
+  if (!canMake) {
+    return (
+      <div className="ev-empty">
+        <div className="ic">✨</div>
+        <h3 className="ev-serif">Casi listas</h3>
+        <p>Añade al menos un par de prendas en tu guardarropa y aquí armaré tu look del día.</p>
+      </div>
+    );
+  }
+
+  if (phase === "loading") {
+    return (
+      <div className="ev-loading" style={{marginTop:50}}>
+        <div className="ev-dots"><i/><i/><i/></div>
+        <div className="ev-serif" style={{fontSize:18,color:"var(--ink)"}}>Combinando tu guardarropa…</div>
+      </div>
+    );
+  }
+
+  if (phase === "result" && look) {
+    const pieces = (look.items || []).map((id)=>items.find((i)=>i.id===id)).filter(Boolean);
+    return (
+      <>
+        <div className="ev-look">
+          <div className="top">
+            <span className="ev-eyebrow">Look del día</span>
+            <h2 className="ev-serif">{look.titulo}</h2>
+            <div className="ctx">{OCCASIONS.find(o=>o.id===look.occ).l} · {WEATHER.find(w=>w.id===look.wx).l} · {MOODS.find(m=>m.id===look.mood).l}</div>
+          </div>
+          {pieces.length ? (
+            <div className="ev-flat">
+              {pieces.map((p)=>(
+                <div className="pc" key={p.id}>
+                  <div className="ph" style={{backgroundImage:`url(${images[p.id]})`}} />
+                  <div className="cap">{CAT_LABEL[p.cat]} · {p.color}</div>
+                </div>
+              ))}
+            </div>
+          ) : <p style={{color:"var(--muted)",textAlign:"center"}}>No encontré prendas suficientes para este look.</p>}
+          {look.notas && <div className="ev-note">{look.notas}”</div>}
+        </div>
+        {!hasShoes && <p style={{color:"var(--muted)",fontSize:12,textAlign:"center",padding:"12px 30px 0"}}>Sugerencia: añade algunos zapatos para completar mejor los looks.</p>}
+        <div className="ev-form" style={{marginTop:6}}>
+          <button className="ev-btn primary" onClick={()=>make(look)}>Otra opción</button>
+          <button className="ev-btn ghost" onClick={()=>setPhase("form")}>Cambiar el día</button>
+        </div>
+      </>
+    );
+  }
+
+  // formulario
+  return (
+    <div className="ev-form">
+      <div className="ev-q">
+        <span className="ev-eyebrow">¿Qué día tendrás?</span>
+        <div className="ev-opts">
+          {OCCASIONS.map((o)=>(<button key={o.id} className={`ev-opt ${occ===o.id?"on":""}`} onClick={()=>setOcc(o.id)}>{o.l}</button>))}
+        </div>
+      </div>
+      <div className="ev-q">
+        <span className="ev-eyebrow">¿Cómo está el clima?</span>
+        <div className="ev-opts">
+          {WEATHER.map((w)=>(<button key={w.id} className={`ev-opt ${wx===w.id?"on":""}`} onClick={()=>setWx(w.id)}>{w.l}</button>))}
+        </div>
+      </div>
+      <div className="ev-q">
+        <span className="ev-eyebrow">¿Cómo quieres sentirte hoy?</span>
+        <div className="ev-opts">
+          {MOODS.map((m)=>(<button key={m.id} className={`ev-opt ${mood===m.id?"on":""}`} onClick={()=>setMood(m.id)}>{m.l}</button>))}
+        </div>
+      </div>
+      <div style={{height:22}} />
+      <button className="ev-btn primary" onClick={()=>make(null)}>Crear mi look del día</button>
+    </div>
+  );
+}
+
+/* ----------------------- estilista basado en reglas -----------------------
+   Sin conexión a ningún servidor: combina tus prendas según ocasión, clima
+   y el ánimo con el que quieres vestirte hoy. */
+const MOOD_COLORS = {
+  elegante: ["Negro","Rojo/Vino","Dorado/Plata","Blanco/Neutro"],
+  comoda:   ["Pastel","Tierra/Café","Blanco/Neutro","Azul"],
+  energia:  ["Rojo/Vino","Verde","Rosa","Estampado"],
+  minimal:  ["Blanco/Neutro","Negro","Azul"],
+  atrevida: ["Estampado","Rojo/Vino","Dorado/Plata","Rosa"],
+};
+const MOOD_FORM_SHIFT = { elegante:0.4, comoda:-0.4, energia:0, minimal:0, atrevida:0.2 };
+
+function ruleOutfit(items, occ, wx, mood, avoidIds) {
+  avoidIds = avoidIds || [];
+  const wMeta = WEATHER.find((w)=>w.id===wx);
+  let targetForm = occ==="formal"?3 : occ==="oficina"?2 : 1;
+  targetForm += MOOD_FORM_SHIFT[mood] || 0;
+  const moodColors = MOOD_COLORS[mood] || [];
+
+  const byCat = (c)=>items.filter((i)=>i.cat===c);
+  const score = (i)=> {
+    let s = -Math.abs(i.formality-targetForm)*2 - Math.abs(i.warmth-wMeta.warm);
+    if (moodColors.includes(i.color)) s += 1.4;
+    if (avoidIds.includes(i.id)) s -= 3;
+    return s + Math.random()*0.7;
+  };
+  const best = (arr)=> arr.slice().sort((a,b)=>score(b)-score(a))[0];
+
+  const out = [];
+  const dresses = byCat("vestidos"), tops = byCat("blusas");
+  const bottoms = [...byCat("faldas"), ...byCat("pantalones")];
+
+  if (dresses.length && (!tops.length || !bottoms.length || Math.random()<0.4)) {
+    out.push(best(dresses).id);
+  } else if (tops.length && bottoms.length) {
+    out.push(best(tops).id, best(bottoms).id);
+  } else if (tops.length) out.push(best(tops).id);
+  else if (bottoms.length) out.push(best(bottoms).id);
+  else if (dresses.length) out.push(best(dresses).id);
+
+  const shoes = byCat("zapatos"); if (shoes.length) out.push(best(shoes).id);
+  if (wMeta.coat || wMeta.warm>=3) { const coats=byCat("abrigos"); if (coats.length) out.push(best(coats).id); }
+  const bags = byCat("bolsas"); if (bags.length) out.push(best(bags).id);
+  if (occ!=="casa") { const acc=byCat("accesorios"); if (acc.length && Math.random()<0.7) out.push(best(acc).id); }
+  if (mood==="elegante" || mood==="atrevida") { const hats=byCat("sombreros"); if (hats.length && Math.random()<0.35) out.push(best(hats).id); }
+
+  const titulos = { oficina:"Día de oficina", casual:"Encuentro relajado", formal:"Ocasión especial", casa:"Comodidad en casa" };
+  const notasMood = {
+    elegante: "Líneas limpias y un toque pulido: justo lo que pediste para hoy.",
+    comoda: "Prioricé comodidad sin perder estilo. Perfecto para moverte con libertad.",
+    energia: "Combinación con personalidad para que te sientas con todo el ánimo.",
+    minimal: "Menos es más: piezas simples que se ven bien juntas sin esfuerzo.",
+    atrevida: "Una mezcla con carácter para destacar hoy.",
+  };
+  return {
+    titulo: titulos[occ] || "Tu look",
+    items: out.filter(Boolean),
+    notas: notasMood[mood] || "Combinación pensada para tu día.",
+  };
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
